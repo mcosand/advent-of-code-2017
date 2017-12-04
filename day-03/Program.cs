@@ -11,43 +11,45 @@ namespace day_03
     static void Main(string[] args)
     {
       int input = 289326;
-      //for (input = 1; input <= 1024; input++)
-      //{
 
-        for (int lengthOfSide = 1; lengthOfSide < 1000; lengthOfSide += 2)
+      int[][] directions = { new int[] { 1, 0 }, new int[] { 0, 1 }, new int[]{ -1, 0 }, new int[] { 0, -1 } };
+      int direction = 0;
+      int x = 0;
+      int y = 0;
+      int radius = 0;
+      int value = 1;
+
+      do
+      {
+        //Console.WriteLine($"{value:0000} ({x}, {y}). Distance = {Math.Abs(x) + Math.Abs(y)}");
+
+        if (x == -y && x >= 0)
         {
-          if (lengthOfSide * lengthOfSide >= input)
-          {
-            int smallerSide = lengthOfSide - 1;
-            int insideCorner = (lengthOfSide - 2) * (lengthOfSide - 2);
+        //  Console.WriteLine($"Hit corner ({x},{y}), v = {value}");
+          radius = radius + 1;
+        }
 
-            int x = 0;
-            int y = 0;
+        int new_x = x + directions[direction][0];
+        int new_y = y + directions[direction][1];
+        //Console.Write($"test {radius} ({new_x}, {new_y}) ");
+        if (Math.Abs(new_x) > radius || Math.Abs(new_y) > radius)        {
+        //  Console.WriteLine("x");
+          direction = (direction + 1) % 4;
+          new_x = x + directions[direction][0];
+          new_y = y + directions[direction][1];
+        //} else
+        //{
+        //  Console.WriteLine("o");
+        }
+        x = new_x;
+        y = new_y;
 
-            if (input <= insideCorner + smallerSide)
-            {
-              x = smallerSide / 2;
-              y = -smallerSide / 2 + (input - insideCorner);
-            }
-            else if (input <= insideCorner + 2 * smallerSide)
-            {
-              x = smallerSide / 2 - (input - insideCorner - smallerSide);
-              y = smallerSide / 2;
-            } else if (input <= insideCorner + 3 * smallerSide)
-            {
-              x = -smallerSide / 2;
-              y = smallerSide / 2 - (input - insideCorner - 2 * smallerSide);
-            } else
-            {
-              x = smallerSide / 2 - (input - insideCorner - 3 * smallerSide);
-              y = smallerSide / 2;
-            }
 
-            Console.WriteLine("{3} ({0}, {1}) -> distance {2}", x, y, Math.Abs(x) + Math.Abs(y), input);
-            break;
-          }
-//        }
-      }
+
+        value++;
+      } while (value < 289326);
+
+      Console.WriteLine($"{value} at ({x},{y}), distance = {Math.Abs(x) + Math.Abs(y)}");
     }
   }
 }
