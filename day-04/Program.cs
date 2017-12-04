@@ -13,7 +13,7 @@ namespace day_04
     {
       int valid = 0;
       foreach (string line in File.ReadLines("input.txt").Select(f => f.Trim())) {
-        var dict = line.Split(' ').GroupBy(f => f).ToDictionary(f => f.Key, f => f.Count());
+        var dict = line.Split(' ').GroupBy(f => new string(f.ToCharArray().OrderBy(g => g).ToArray())).ToDictionary(f => f.Key, f => f.Count());
         if (dict.All(f => f.Value == 1)) valid++;
       }
       Console.WriteLine(valid);
