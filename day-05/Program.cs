@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace day_05
 {
@@ -17,7 +14,8 @@ namespace day_05
       while (pc >= 0 && pc < offsets.Length)
       {
         var old = pc;
-        pc = pc + offsets[pc]++;
+        pc = pc + offsets[pc];
+        offsets[old] = offsets[old] + (offsets[old] >= 3 ? -1 : 1);
         steps++;
       }
       Console.WriteLine(steps);
