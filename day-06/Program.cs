@@ -12,15 +12,23 @@ namespace day_06
     {
       var banks = "10	3	15	10	5	15	5	15	9	2	5	8	5	2	3	6".Split('\t').Select(f => int.Parse(f)).ToArray();
       var patterns = new SortedSet<string>();
-      
+      bool inLoop = false;
       while (true)
       {
         string key = string.Join(" ", banks);
         //Console.WriteLine(string.Join(" ", banks.Select(f => $"{f:000}")));
         if (patterns.Contains(key))
         {
-          Console.WriteLine(patterns.Count);
-          return;
+          if (inLoop)
+          {
+            Console.WriteLine(patterns.Count);
+            return;
+          }
+          else
+          {
+            inLoop = true;
+            patterns = new SortedSet<string> { key };
+          }
         }
         patterns.Add(key);
 
