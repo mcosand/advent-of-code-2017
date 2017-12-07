@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace day_07
 {
@@ -42,7 +40,19 @@ namespace day_07
         root = root.Parent;
       }
 
-      Console.WriteLine(root.Name);
+
+      while (root != null)
+      {
+        int commonWeight = root.Children.GroupBy(f => f.WeightWithChildren).Where(f => f.Count() != 1).Select(f => f.Key).First();
+        var badNode = root.Children.GroupBy(f => f.WeightWithChildren).Where(f => f.Count() == 1).Select(f => f.First()).FirstOrDefault();
+
+        if (badNode.Children.Count == 0 || badNode.Children.All(f => f.WeightWithChildren == badNode.Children[0].WeightWithChildren))
+        {
+          Console.WriteLine($"Bad node is {badNode.Name}. Weight {badNode.Weight} should be {commonWeight - badNode.WeightWithChildren + badNode.Weight}");
+          break;
+        }
+        root = badNode;
+      }
     }
 
 
@@ -61,6 +71,7 @@ namespace day_07
   {
     public string Name { get; set; }
     public int Weight { get; set; }
+    public int WeightWithChildren { get { return Weight + Children.Sum(f => f.WeightWithChildren); } }
     public Node Parent { get; set; }
     public List<Node> Children { get; set; } = new List<Node>();
   }
