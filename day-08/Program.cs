@@ -29,7 +29,7 @@ namespace day_08
 
     void Run()
     {
-      
+      int maxValue = int.MinValue;
 
       foreach (var line in File.ReadAllLines("input.txt"))
       {
@@ -40,12 +40,18 @@ namespace day_08
 
         if (testResult)
         {
-          AddOrUpdate(parsed.Groups[1].Value, (parsed.Groups[2].Value == "inc" ? 1 : -1) * int.Parse(parsed.Groups[3].Value));
+          string register = parsed.Groups[1].Value;
+          AddOrUpdate(register, (parsed.Groups[2].Value == "inc" ? 1 : -1) * int.Parse(parsed.Groups[3].Value));
+          if (registers[register] > maxValue)
+          {
+            maxValue = registers[register];
+          }
         }
       }
 
       var largest = registers.OrderByDescending(f => f.Value).First();
       Console.WriteLine($"The largest register is {largest.Key}, with value {largest.Value}");
+      Console.WriteLine($"The largest value seen was {maxValue}");
     }
 
     void AddOrUpdate(string register, int added)
