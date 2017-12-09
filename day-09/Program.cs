@@ -13,6 +13,7 @@ namespace day_09
       bool garbage = false;
       int group = 0;
       int sum = 0;
+      int garbageCount = 0;
 
       for (var i = 0; i< input.Length; i++)
       {
@@ -23,6 +24,10 @@ namespace day_09
         else if (garbage)
         {
           if (input[i] == '>') garbage = false;
+          else
+          {
+            garbageCount++;
+          }
         }
         else if (input[i] == '<')
         {
@@ -37,7 +42,7 @@ namespace day_09
           sum += group--;
         }
       }
-      Console.WriteLine(group);
+      Console.WriteLine(garbageCount);
     }
   }
 }
