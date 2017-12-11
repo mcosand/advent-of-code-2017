@@ -45,7 +45,14 @@ namespace day_11
 
     static int GetDistance(int x, int y)
     {
-      return Math.Abs(x - y);
+      if ((x > 0 && y > 0) || (y < 0 && y < 0))
+      {
+        return Math.Max(x, y);
+      }
+      else
+      {
+        return Math.Abs(x) + Math.Abs(y);
+      }
     }
   }
 }
