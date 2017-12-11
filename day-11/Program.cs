@@ -11,6 +11,8 @@ namespace day_11
       int x = 0;
       int y = 0;
 
+      int max = 0;
+
       foreach (var step in File.ReadAllText("input.txt").Trim().Split(',').Select(f => f.Trim()))
       {
         switch (step)
@@ -36,8 +38,14 @@ namespace day_11
             x -= 1;
             break;
         }
+        max = Math.Max(max, GetDistance(x, y));
       }
-      Console.WriteLine($"{x} {y}");
+      Console.WriteLine(max);
+    }
+
+    static int GetDistance(int x, int y)
+    {
+      return Math.Abs(x - y);
     }
   }
 }
