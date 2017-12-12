@@ -18,10 +18,14 @@ namespace day_12
         nodes.Add(parts[0], parts.Skip(1).ToArray());
       }
 
-      Dictionary<int, bool> inSet = new Dictionary<int, bool>();
-
-      FillSet(nodes, inSet, 0);
-      Console.WriteLine(inSet.Count);
+      int groups = 0;
+      while (nodes.Count > 0)
+      {
+        groups++;
+        Dictionary<int, bool> inSet = new Dictionary<int, bool>();
+        FillSet(nodes, inSet, nodes.First().Key);
+      }
+      Console.WriteLine(groups);
     }
 
     static void FillSet(Dictionary<int, int[]> nodes, Dictionary<int, bool> inSet, int node)
@@ -34,6 +38,8 @@ namespace day_12
       {
         FillSet(nodes, inSet, child);
       }
+
+      nodes.Remove(node);
     }
   }
 }
