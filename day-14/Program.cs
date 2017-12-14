@@ -10,6 +10,12 @@ namespace day_14
   {
     static void Main(string[] args)
     {
+      int[][] grid = new int[128][];
+      for (int i=0;i<128;i++)
+      {
+        grid[i] = new int[128];
+      }
+
       //string input = "flqrgnkx";
       string input = "ljoxqyyw";
 
@@ -21,13 +27,70 @@ namespace day_14
         {
           for (int k = 0; k<8;k++)
           {
-            if ((hash[j] & 0x01) == 0x01) used++;
-            hash[j] = hash[j] >> 1;
+            if ((hash[j] & 0x80) == 0x80)
+            {
+              used++;
+              grid[i][j * 8 + k] = -1;
+            }
+            hash[j] = hash[j] << 1;
           }
         }
       }
 
+
+      //Console.CursorLeft = 0;
+      //Console.CursorTop = 1;
+
+      //for (int i = 0; i < 128; i++)
+      //{
+      //  Console.ForegroundColor = ConsoleColor.White;
+      //  Console.Write(" ");
+      //  Console.WriteLine(new string('.', 128));
+      //}
+
+      for (int i = 0; i < 128; i++)
+      {
+        for (int j = 0; j < 128; j++)
+        {
+          color(grid, i, j);
+        }
+      }
+
+      Console.WriteLine(regions);
     }
+
+
+
+    static int regions = 0;
+
+    private static void color(int[][] grid, int x, int y)
+    {
+      if (grid[x][y] >= 0)
+      {
+        return;
+      }
+      else
+      {
+        regions++;
+        mark(grid, x, y);
+      }
+    }
+
+    private static void mark(int[][] grid, int x, int y)
+    {
+      if (grid[x][y] >= 0) return;
+      grid[x][y] = regions;
+      //Console.ForegroundColor = (ConsoleColor)((regions + 4) % 10);
+      //Console.CursorLeft = y + 1;
+      //Console.CursorTop = x + 1;
+      //Console.Write(regions % 10);
+      if (x > 0) mark(grid, x - 1, y);
+      if (x < 127) mark(grid, x + 1, y);
+      if (y > 0) mark(grid, x, y - 1);
+      if (y < 127) mark(grid, x, y + 1);
+    }
+
+
 
     private static int[] knotHash(string input)
     {
