@@ -1,0 +1,149 @@
+<html>
+  <head>
+    <title>Advent of Code 2017 - Day 14</title>
+    <style type="text/css">
+    body{ margin: 2px }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script>
+      var mult = Math.floor(Math.min(window.innerHeight, window.innerWidth) / 128);
+      var canvas = document.getElementById('canvas');
+      canvas.width = 128 * mult;
+      canvas.height = 128 * mult;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ddd';
+      ctx.fillRect(0, 0, 128 * mult, mult*128);
+      ctx.imageSmoothingEnabled = false;
+
+      var grid = [];
+      for (var i=0;i<128;i++)
+      {
+        grid[i] = [];
+        for (var j = 0; j<128;j++) {
+          grid[i][j] = 0;
+        }
+      }
+
+      var input = "ljoxqyyw";
+
+
+      var regions = 0;
+      var colors = ['blue','aqua','teal','olive','green','lime','yellow','orange','red','maroon','fuchsia','purple','gray','silver', 'lightsalmon', 'antiquewhite', 'cornflowerblue', 'darksalmon','palegoldenrod'];
+      function color(x, y)
+      {
+        if (grid[x][y] > 0)
+        {
+        } else if (grid[x][y] == 0) {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(x*mult, y*mult, mult, mult);
+        }
+        else
+        {
+          regions++;
+          mark(x, y);
+          return true;
+        }
+        return false;
+      }
+
+      function mark(x, y)
+      {
+        if (grid[x][y] >= 0) return;
+        
+        ctx.fillStyle = colors[regions % colors.length];
+        ctx.fillRect(x * mult, y * mult, mult, mult);
+        
+        grid[x][y] = regions;
+        if (x > 0) mark(x - 1, y);
+        if (x < 127) mark(x + 1, y);
+        if (y > 0) mark(x, y - 1);
+        if (y < 127) mark(x, y + 1);
+      }
+
+
+
+      function knotHash(input)
+      {
+        var lengths = input.trim().split('').map(function(f) { return f.charCodeAt(0) }).concat([ 17, 31, 73, 47, 23 ])
+        var size = 256;
+
+        var nodes = [];
+        var current = 0;
+        var skip = 0;
+
+        for (var i = 0; i < size; i++) { nodes[i] = i; }
+
+        for (var r = 0; r < 64; r++)
+        {
+          for (var i = 0; i < lengths.length; i++)
+          {
+            var thisLength = lengths[i];
+            for (var l = 0; l < thisLength / 2; l++)
+            {
+              var left = (current + l) % size;
+              var right = (current + thisLength - l - 1) % size;
+              var swap = nodes[left];
+              nodes[left] = nodes[right];
+              nodes[right] = swap;
+            }
+            current = (current + skip + thisLength) % size;
+            skip++;
+          }
+        }
+
+
+        var hashBytes = [];
+        for (var i = 0; i < 16; i++)
+        {
+          for (var j = 0; j < 16; j++)
+          {
+            hashBytes[i] = hashBytes[i] ^ nodes[i * 16 + j];
+          }
+        }
+        return hashBytes;
+      }
+
+
+
+      var used = 0;
+      for (var i=0;i<128;i++)
+      {
+        var hash = knotHash(input + "-" + i);
+        //console.log(hash.map(function(f) { return ('0' + (f & 0xff).toString(16)).slice(-2)}).join(''));
+        for (var j=0;j<hash.length;j++)
+        {
+          for (var k = 0; k<8;k++)
+          {
+            if ((hash[j] & 0x80) == 0x80)
+            {
+              grid[i][j * 8 + k] = -1;
+              used++;
+            }
+            hash[j] = hash[j] << 1;
+          }
+        }
+      }
+
+      var drawX = 0;
+      var drawY = 0;
+      setInterval(function() {
+        var drawn = false;
+        do {
+          drawn = color(drawX, drawY);
+          drawX++;
+          if (drawX == 128) { drawX = 0; drawY++;}
+        } while (!drawn);
+      }, 1);
+      // for (var i = 0; i < 128; i++)
+      // {
+      //   for (var j = 0; j < 128; j++)
+      //   {
+      //     color(i, j);
+      //   }
+      // }
+      console.log(used);
+    </script>
+  </body>
+</html>
