@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace day_15
 {
@@ -11,10 +7,9 @@ namespace day_15
     static void Main(string[] args)
     {
       int matches = 0;
-      var genA = new Generator(512, 16807);
-      var genB = new Generator(191, 48271);
-
-      for (int i=0;i<40000000;i++)
+      var genA = new Generator(512, 16807, 4);
+      var genB = new Generator(191, 48271, 8);
+      for (int i=0;i<5000000;i++)
       {
         if (i % 1000000 == 0) Console.WriteLine(i);
         if (genA.GetNext() == genB.GetNext()) matches++;
@@ -26,15 +21,23 @@ namespace day_15
     {
       public long previous;
       public int factor;
-      public Generator(int start, int factor)
+      public int mask;
+
+      public Generator(int start, int factor, int mask)
       {
         previous = start;
         this.factor = factor;
+        this.mask = mask;
       }
 
       public int GetNext()
       {
-        previous = (previous * factor) % int.MaxValue;
+        do
+        {
+          previous = (previous * factor) % int.MaxValue;
+        } while ((previous % mask) != 0);
+
+
         //Console.WriteLine(previous);
 
         //Console.WriteLine(Convert.ToString((int)(previous & 0xffff), 2));
