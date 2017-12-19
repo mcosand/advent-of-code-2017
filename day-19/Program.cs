@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace day_19
 {
@@ -17,6 +14,7 @@ namespace day_19
 
       var grid = lines.Select(f => f.PadRight(maxWidth).ToCharArray().ToList()).ToList();
       var steps = 0;
+      var letterSteps = 0;
       
       var y = 0;
       var x = grid[y].IndexOf('|');
@@ -27,9 +25,10 @@ namespace day_19
       {
         while (grid[y][x] != '+' && grid[y][x] != ' ')
         {
-          if (!new[] { '+', '-', '|', ' ' }.Contains(grid[y][x])) message += grid[y][x];
-
           steps++;
+
+          if (!new[] { '+', '-', '|', ' ' }.Contains(grid[y][x])) { message += grid[y][x]; letterSteps = steps; }
+
           if (direction == 's')
           {
             y++;
@@ -59,7 +58,7 @@ namespace day_19
         }
         steps++;
       }
-      Console.WriteLine($"Read {message} in {steps} steps.");
+      Console.WriteLine($"Read {message} in {letterSteps} of {steps} steps.");
     }
   }
 }
