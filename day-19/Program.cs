@@ -25,13 +25,10 @@ namespace day_19
 
       while (grid[y][x] != ' ')
       {
-        while (grid[y][x] != '+')
+        while (grid[y][x] != '+' && grid[y][x] != ' ')
         {
           if (!new[] { '+', '-', '|', ' ' }.Contains(grid[y][x])) message += grid[y][x];
-          if (grid[y][x] == 'T')
-          {
-            Console.WriteLine(steps);
-          }
+
           steps++;
           if (direction == 's')
           {
@@ -51,7 +48,8 @@ namespace day_19
           }
         }
 
-        if ((direction == 's' || direction == 'n') && x < maxWidth - 1 && grid[y][x + 1] == '-') { direction = 'e'; x++; }
+        if (grid[y][x] == ' ') break;
+        else if ((direction == 's' || direction == 'n') && x < maxWidth - 1 && grid[y][x + 1] == '-') { direction = 'e'; x++; }
         else if ((direction == 's' || direction == 'n') && x > 0 && grid[y][x - 1] == '-') { direction = 'w'; x--; }
         else if ((direction == 'w' || direction == 'e') && y > 0 && grid[y - 1][x] == '|') { direction = 'n'; y--; }
         else if ((direction == 'w' || direction == 'e') && y < lines.Length - 1 && grid[y + 1][x] == '|') { direction = 's'; y++; }
@@ -61,6 +59,7 @@ namespace day_19
         }
         steps++;
       }
+      Console.WriteLine($"Read {message} in {steps} steps.");
     }
   }
 }
