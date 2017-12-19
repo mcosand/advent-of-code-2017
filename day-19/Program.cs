@@ -16,8 +16,8 @@ namespace day_19
 
 
       var grid = lines.Select(f => f.PadRight(maxWidth).ToCharArray().ToList()).ToList();
-
-
+      var steps = 0;
+      
       var y = 0;
       var x = grid[y].IndexOf('|');
       var direction = 's';
@@ -28,7 +28,11 @@ namespace day_19
         while (grid[y][x] != '+')
         {
           if (!new[] { '+', '-', '|', ' ' }.Contains(grid[y][x])) message += grid[y][x];
-
+          if (grid[y][x] == 'T')
+          {
+            Console.WriteLine(steps);
+          }
+          steps++;
           if (direction == 's')
           {
             y++;
@@ -55,6 +59,7 @@ namespace day_19
         {
           Console.WriteLine("I don't know!");
         }
+        steps++;
       }
     }
   }
