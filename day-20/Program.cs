@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace day_20
 {
@@ -14,21 +11,29 @@ namespace day_20
     {
       var lines = File.ReadAllLines("input.txt")
         .Select(f => new Particle(f))
-        .ToArray();
+        .ToList();
 
-      int minLength = int.MaxValue;
-      int index = 0;
-
-      for (var i = 0; i < lines.Length; i++)
+      for (var s = 0;s<1000000;s++)
       {
-        if (lines[i].AccelDistance < minLength)
+        var groups = lines.Select((f, i) => new { i = i, p = f }).GroupBy(f => f.p.P.ToString()).Where(f => f.Count() > 1).SelectMany(f => f.ToArray()).ToArray();
+
+        if (groups.Length > 0)
         {
-          minLength = lines[i].AccelDistance;
-          index = i;
+          Console.WriteLine("Removing " + groups.Length);
+
+          foreach (var gone in groups.OrderByDescending(f => f.i))
+          {           
+            lines.RemoveAt(gone.i);
+          }
+        }
+
+        for (var i=0;i<lines.Count; i++)
+        {
+          var p = lines[i];
+          p.V = new Tuple<int, int, int>(p.V.Item1 + p.A.Item1, p.V.Item2 + p.A.Item2, p.V.Item3 + p.A.Item3);
+          p.P = new Tuple<int, int, int>(p.P.Item1 + p.V.Item1, p.P.Item2 + p.V.Item2, p.P.Item3 + p.V.Item3);
         }
       }
-
-      Console.WriteLine(index);
     }
 
 
@@ -39,9 +44,9 @@ namespace day_20
     {
       var match = Regex.Match(args, "p=\\<([ \\d-]+),([ \\d-]+),([ \\d-]+)\\>, v=\\<([ \\d-]+),([ \\d-]+),([ \\d-]+)\\>, a=\\<([ \\d-]+),([ \\d-]+),([ \\d-]+)\\>");
 
-      Position = Parse(match, 1);
-      Velocity = Parse(match, 4);
-      Acceleration = Parse(match, 7);
+      P = Parse(match, 1);
+      V = Parse(match, 4);
+      A = Parse(match, 7);
 
     }
 
@@ -50,10 +55,10 @@ namespace day_20
       return new Tuple<int,int,int>(int.Parse(m.Groups[i].Value.Trim()), int.Parse(m.Groups[i+1].Value.Trim()), int.Parse(m.Groups[i + 2].Value.Trim()));
     }
 
-    public Tuple<int, int, int> Position { get; set; }
-    public Tuple<int, int, int> Velocity { get; set; }
-    public Tuple<int, int, int> Acceleration { get; set; }
+    public Tuple<int, int, int> P { get; set; }
+    public Tuple<int, int, int> V { get; set; }
+    public Tuple<int, int, int> A { get; set; }
 
-    public int AccelDistance {  get { return Math.Abs(Acceleration.Item1) + Math.Abs(Acceleration.Item2) + Math.Abs(Acceleration.Item3);  } }
+    public int AccelDistance {  get { return Math.Abs(A.Item1) + Math.Abs(A.Item2) + Math.Abs(A.Item3);  } }
   }
 }
