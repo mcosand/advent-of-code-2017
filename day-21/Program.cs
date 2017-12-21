@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -14,23 +15,21 @@ namespace day_21
     {
       rules = File.ReadAllLines("input.txt").Select(f => f.Split(new[] { " => " }, StringSplitOptions.None)).ToDictionary(f => f[0], f=> f[1]);
 
-      List<string> grids = new List<string> { ".#./..#/###" };
-      string theGrid = grids[0];
+      string theGrid = ".#./..#/###";
 
       int answer = 0;
-      for (var c = 0; c < 5; c++)
+      for (var c = 0; c < 18; c++)
       {
-        Console.WriteLine("starting iteration " + (c + 1));
+        List<string> grids = SplitGrid(theGrid);
         List<string> nextGrids = new List<string>();
         for (var g = 0; g < grids.Count; g++)
         {
           nextGrids.Add(RuleSearch(grids[g]));
         }
         theGrid = MergeGrid(nextGrids);
-        grids = SplitGrid(theGrid);
-        answer = string.Join("", grids).Replace(".", "").Replace("/", "").Length;
+        answer = theGrid.Where(g => g == '#').Count();
+        Console.WriteLine($"{c + 1}: {answer}");
       }
-      
     }
 
     private static string RuleSearch(string grid)
@@ -95,6 +94,7 @@ namespace day_21
 
     static void dumpMatch(string left, string right)
     {
+      return;
       var l = left.Split('/');
       var r = right.Split('/');
       for (var i=0;i<l.Length;i++)
@@ -108,13 +108,19 @@ namespace day_21
     {
       var lines = grid.Split('/');
       var gridSize = lines.Length % 2 == 0 ? 2 : 3;
+
+      Debug.Assert(lines[0].Length == lines.Length);
+
       var splits = new List<string>();
-      for (var i = 0; i < lines.Length; i += gridSize)
+
+      for (var gridY = 0; gridY < lines.Length / gridSize; gridY++)
       {
-        for (var j = 0; j < lines.Length; j += gridSize)
+        for (var gridX = 0; gridX < lines.Length / gridSize; gridX++)
         {
-          var counter = gridSize == 2 ? new[] { 0, 1 } : new int[] { 0, 1, 2 };
-          splits.Add(string.Join("/", counter.Select(y => new string(lines[j + y].Skip(i).Take(gridSize).ToArray()))));
+          splits.Add(
+            string.Join("/",
+            Enumerable.Range(0, gridSize)
+            .Select(innerY => new string(lines[gridY * gridSize + innerY].Skip(gridX * gridSize).Take(gridSize).ToArray()))));
         }
       }
       return splits;
@@ -127,7 +133,6 @@ namespace day_21
       int srcSize = grids[0].IndexOf('/');
       int gridsOnSide = (int)Math.Sqrt(grids.Count);
       int targetSize = gridsOnSide * srcSize;
-      
 
       var rows = new List<string>();
 
@@ -142,7 +147,6 @@ namespace day_21
             ));
         }
       }
-      
 
       return string.Join("/", rows);
     }
