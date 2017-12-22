@@ -1,0 +1,254 @@
+<html>
+  <head>
+    <title>Advent of Code 2017 - Day 22</title>
+    <style type="text/css">
+    body{ margin: 2px }
+    h4 { margin: .4em 0 }
+    .controls {
+      padding: 1em;
+      background-color: cornsilk;
+    }
+
+.controls label {
+  margin-top:1em;
+  font-weight: bold;
+}
+
+.controls button {
+  margin-top:1em;
+}
+
+form { display: flex; flex-direction: column}
+
+    </style>
+  </head>
+  <body style="display:flex; align-items:stretch;">
+    <div class="controls" style="border-right: solid 1px black; display:flex; flex-direction:column">
+      <h4>--- Day 22: Sporifica Virus ---</h4>
+      <div><a href="http://adventofcode.com/2017/day/22">Advent of Code</a></div>
+      
+      <button onClick="start()">Start / Pause</button>
+    <form>
+      <label>Speed:</label>
+      <input type="range" onChange="animBursts = Math.pow(10, this.value); document.getElementById('speedValue').innerText = animBursts" min="0" max="5" value="2">
+
+      <div style="font-size:80%; border-bottom:dashed 1px #ddd; margin-top:2em">Changes below will restart the simulation</div>
+      <label>Iterations:</label>
+      <input type="range" min="0" max="8" value="7" step="any" id="iterations" onChange="document.getElementById('iterationValue').innerText = Math.floor(Math.pow(10, this.value)); initialize()">
+      <input type="text" id="iterationValue" style="text-align: right" onkeyup="document.getElementById('iterations').value = Math.log10(this.value); initialize()" onchange="document.getElementById('iterations').value = Math.log10(this.value); initialize()" value="10000000">
+
+      <label>Zoom:</label>
+      <input id="zoom" type="range" min="1" max="10" value="3" onchange="initialize()">
+      
+      <label>Mode:</label>
+      <select id="mode" onChange="initialize()">
+        <option value='1'>Part 1</option>
+        <option value='2' selected="selected">Part 2</option>
+      </select>
+
+
+      <label>Paste your puzzle input:</label>
+      <textarea id="inputText" rows="25" cols="25" onchange="initialize()" onkeyup="initialize()">###.######..##.##..#..#.#
+#.#.#.##.##.#####..##..#.
+##...#.....#.#.#..##.#.##
+....#####.#.#.#..###.###.
+###.#.......#..#.#...#..#
+.#.######.##.#.....#...##
+##.#...#..#..#....##.#.#.
+#.##..#..##.##..###...#.#
+.#.......#.#..####.#.#.##
+.#...###...##..#...#.#..#
+...##......#.##.....#..#.
+######....##...##.....#.#
+.####..##..##.#.##.##..#.
+.#.#...###.#....#.##.####
+..####..#.#..#.#.#......#
+#.#..##..#####.#.#....##.
+.....#..########....#.##.
+##.###....#..###..#.....#
+.#.##...#.#...###.##...#.
+..#.##..#..####.##..###.#
+.#..#.##..#.##...#####.#.
+#..##............#..#....
+###.....#.##.#####...#.##
+##.##..#.....##..........
+#.#..##.#.#..#....##..#.#</textarea>
+<button type="reset" onclick="window.setTimeout(initialize, 0)">Reset</button>
+  </form>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items: center; justify-content:center; flex: 1 1 auto;">
+      <div id="container">
+      </div>
+      <div id="infections" style="margin-top:1em">Infections: 0</div>
+      <input type="range" min="0" value="0" max="100" id="progress" disabled="disabled">
+    </div>
+
+    <script>
+      var input;
+
+      var CLEAN = 0, WEAK = 1, INFECTED = 2, FLAGGED = 3;
+      var UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3;
+      var minX = 0, minY = 0, maxX, maxY;
+
+      var mode = 2;
+      var mult = 10;
+      var grow = 5;
+      var iterations = 10000000;
+      var infections = 0;
+      var animBursts = 150;
+
+      var canvas;
+      var ctx;
+
+      var infectionDiv = document.getElementById('infections');
+      var progress = document.getElementById('progress');
+      
+      // Who's infected?
+      var nodes;
+
+      // What offset is need to get from problem space to canvas space?
+      var toOriginX, toOriginY;
+
+      // Where is the carrier?
+      var x, y, direction;
+
+      // Which iteration?
+      var i = 0;
+
+      var colors = [ '#fafafa', '#0000aa', '#000', '#0a0'];
+      var timer;
+      var paused = false;
+
+      function start() {
+        if (!timer) {
+          if (!paused) initialize();
+          timer = window.setInterval(burst, 1);
+        } else {
+          paused = true;
+          window.clearInterval(timer);
+          timer = 0;
+        }
+      }
+
+      function initialize() {
+        if (timer) { window.clearInterval(timer); timer = 0; }
+        if (canvas) document.getElementById('container').removeChild(canvas);
+        canvas = null;
+        infectionDiv.innerText = "Infections: 0";
+
+        input = document.getElementById('inputText').value.split('\n');
+
+        paused = false;
+
+        toOriginX = 0;
+        toOriginY = 0;
+
+        minX = 0;
+        minY = 0;
+        maxX = input[0].length - 1;
+        maxY = input.length - 1;
+
+        iterations = Math.floor(Math.pow(10, document.getElementById('iterations').value))
+        document.getElementById('iterationValue').innerText = iterations;
+        i = 0;
+
+        mult = document.getElementById('zoom').value;
+        mode = 1 * document.getElementById('mode').value;
+        expandCanvas((maxX - minX) * mult, 0, (maxY - minY) * mult, 0);
+        ctx.fillStyle = '#000';
+
+        nodes = {};
+
+        for (y=0;y<input.length;y++) {
+          for (x=0;x<input[0].length;x++) {
+            if (input[y][x] == '#') {
+              nodes[x + "," + y] = INFECTED;
+              ctx.fillRect(x * mult, y * mult, mult, mult);
+            }
+          }
+        }
+
+        x = Math.floor(input[0].length / 2);
+        y = Math.floor(y / 2);
+        direction = UP;
+
+        console.log('loaded');
+      }
+
+      function expandCanvas(left, right, top, bottom) {
+        var newCanvas = document.createElement('canvas');
+
+        newCanvas.width = (canvas ? canvas.width : 0) + left + right;
+        newCanvas.height = (canvas ? canvas.height : 0) + top + bottom;
+        ctx = newCanvas.getContext('2d');
+        if (!canvas) {
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);  
+        } else {
+          ctx.drawImage(canvas, left, top, canvas.width, canvas.height);
+        }
+        ctx.imageSmoothingEnabled = false;
+        ctx.oImageSmoothingEnabled = false;
+        ctx.webkitImageSmoothingEnabled = false;
+        ctx.mozImageSmoothingEnabled = false;
+
+        var container = document.getElementById('container');
+        if (canvas) container.removeChild(canvas);
+        container.appendChild(newCanvas);
+        canvas = newCanvas;
+      }
+
+      function burst() {
+        var infectionStart = infections;
+        for (var b=0; b<animBursts; b++) {
+          var key = x + "," + y;
+          var health = nodes[key] || CLEAN;
+          
+          var delta = health - 1;
+          
+          direction = (direction + 4 + delta) % 4;
+
+          var newHealth = (health + (3 - mode)) % 4;
+          nodes[key] = newHealth;
+          if (newHealth == INFECTED)
+          {
+            infections++;
+          }
+          
+          if (x + toOriginX < 0) {
+            expandCanvas(grow * mult, 0, 0, 0);
+            toOriginX += grow;
+          } else if (x + toOriginX >= canvas.width / mult) {
+            expandCanvas(0, grow * mult, 0, 0);
+          }
+          if (y + toOriginY < 0) {
+            expandCanvas(0,0,grow * mult, 0);
+            toOriginY += grow ;
+          } else if (y + toOriginY >= canvas.height / mult) {
+            expandCanvas(0,0,0,grow * mult);
+          }
+
+          ctx.fillStyle = colors[newHealth];
+          ctx.fillRect((x + toOriginX) * mult, (y + toOriginY) * mult, mult, mult);
+
+          if (direction == UP) y--;
+          else if (direction == DOWN) y++;
+          else if (direction == LEFT) x--;
+          else if (direction == RIGHT) x++;
+
+
+          if (++i == iterations) {
+            window.clearInterval(timer);
+            timer = 0;
+            break;
+          }
+        }
+        if (infections > infectionStart)
+          infectionDiv.innerText = "Infections: " + infections;
+        progress.value = (i / iterations) * 100;
+      }
+
+      initialize();
+    </script>
+  </body>
+</html>
