@@ -34,7 +34,7 @@ form { display: flex; flex-direction: column}
 
       <div style="font-size:80%; border-bottom:dashed 1px #ddd; margin-top:2em">Changes below will restart the simulation</div>
       <label>Iterations:</label>
-      <input type="range" min="0" max="8" value="7" step="any" id="iterations" onChange="document.getElementById('iterationValue').innerText = Math.floor(Math.pow(10, this.value)); initialize()">
+      <input type="range" min="0" max="8" value="7" step="any" id="iterations" onChange="document.getElementById('iterationValue').value = Math.floor(Math.pow(10, this.value)); initialize()">
       <input type="text" id="iterationValue" style="text-align: right" onkeyup="document.getElementById('iterations').value = Math.log10(this.value); initialize()" onchange="document.getElementById('iterations').value = Math.log10(this.value); initialize()" value="10000000">
 
       <label>Zoom:</label>
@@ -149,7 +149,7 @@ form { display: flex; flex-direction: column}
         maxY = input.length - 1;
 
         iterations = Math.floor(Math.pow(10, document.getElementById('iterations').value))
-        document.getElementById('iterationValue').innerText = iterations;
+        document.getElementById('iterationValue').value = iterations;
         i = 0;
 
         mult = document.getElementById('zoom').value;
