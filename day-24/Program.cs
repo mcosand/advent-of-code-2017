@@ -19,7 +19,7 @@ namespace day_24
 
     static Max GetLongest(List<int[]> parts, int start)
     {
-      Max max = new Max { Strength = 0, Path = "" };
+      Max max = new Max { Strength = 0, Length = 0, Path = "" };
       foreach (var part in parts)
       {
         if (part[0] == start || part[1] == start)
@@ -27,8 +27,14 @@ namespace day_24
           var list = parts.Where(f => f != part).ToList();
           var child = GetLongest(list, part[0] == start ? part[1] : part[0]);
           var strength = part[0] + part[1] + child.Strength;
-          if (strength > max.Strength)
-            max = new Max { Strength = strength, Path = string.Format(part[0] == start ? "{0}/{1}--{2}" : "{1}/{0}--{2}", part[0], part[1], child.Path) };
+          var length = 1 + child.Length;
+          if (length > max.Length || (length == max.Length && strength > max.Strength))
+            max = new Max
+            {
+              Strength = strength,
+              Length = 1 + child.Length,
+              Path = string.Format(part[0] == start ? "{0}/{1}--{2}" : "{1}/{0}--{2}", part[0], part[1], child.Path)
+            };
         }
       }
       return max;
@@ -37,6 +43,7 @@ namespace day_24
     struct Max
     {
       public int Strength;
+      public int Length;
       public string Path;
     }
   }
